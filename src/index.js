@@ -4,7 +4,7 @@ const upload = multer({
   limits: { fieldSize: 25 * 1024 * 1024 },
 });
 
-const LOGIC = requre("./logic");
+const LOGIC = require("./logic");
 
 /**
  * Create a middleware function using a single logic function
