@@ -1,0 +1,11 @@
+{
+  "name": "module-middleware",
+  "version": "1.0.0",
+  "description": "Basic middleware used in backbone as a module so other services can use them",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "njasi",
+  "license": "ISC"
+}
