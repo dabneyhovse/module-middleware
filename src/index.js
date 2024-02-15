@@ -72,5 +72,6 @@ module.exports = {
   isLocalRequest,
   hasApiScope,
   upload,
+  createMiddleware,
   LOGIC,
 };
