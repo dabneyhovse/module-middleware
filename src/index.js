@@ -4,37 +4,73 @@ const upload = multer({
   limits: { fieldSize: 25 * 1024 * 1024 },
 });
 
-const isLocalRequest = (req, res, next) => {
-  // if local it should have the env var
-  if (req.query.local == process.env.LOCAL) {
-    next();
-  } else {
-    res.sendStatus(403);
-  }
-};
+const LOGIC = requre("./logic");
 
-const isLoggedIn = (req, res, next) => {
-  if (req.user) {
-    next();
-  } else {
-    res.sendStatus(403);
-  }
-};
+/**
+ * Create a middleware function using a single logic function
+ */
+function createMiddleware(logic) {
+  return (req, res, next) => {
+    try {
+      // if the logic func is true passes check
+      if (logic(req)) {
+        next();
+        return;
+      }
 
-const isAdmin = (req, res, next) => {
-  if (req.user && req.user.isAdmin) {
-    next();
-  } else {
-    res.sendStatus(403);
-  }
-};
+      res.sendStatus(403);
+    } catch (error) {
+      next(error);
+    }
+  };
+}
 
-const isNotLoggedIn = (req, res, next) => {
-  if (!req.user) {
-    next();
-  } else {
-    res.sendStatus(403);
-  }
-};
+/**
+ * Check if the request is made by a logged in user,
+ * checks the req.user param
+ */
+const isLoggedIn = createMiddleware(LOGIC.isLoggedIn);
 
-module.exports = { isLoggedIn, isAdmin, isNotLoggedIn, isLocalRequest, upload };
+/**
+ * Check if the request is made by an admin user,
+ * checks the req.user.isAdmin param
+ */
+const isAdmin = createMiddleware(LOGIC.isAdmin);
+
+/**
+ * Check if the request was not made by a logged in user,
+ * checks the req.user param
+ *
+ */
+const isNotLoggedIn = createMiddleware(LOGIC.isNotLoggedIn);
+
+/**
+ * Check if the request is a locally made request
+ *
+ * origins can be somewhat faked, so this works with sort of
+ * local api key, which should be passed in the query:
+ *
+ * EX:
+ * `?local={process.env.LOCAL}`
+ */
+const isLocalRequest = createMiddleware(LOGIC.isLocalRequest);
+
+/**
+ * Check if the request has the required scope
+ * checks req.api_key param
+ *
+ * @param {*} scope, the scope required
+ * @returns {*} middleware func that onlyy allows requests with the given scope
+ *
+ */
+const hasApiScope = (scope) => createMiddleware(LOGIC.hasApiScope(scope));
+
+module.exports = {
+  isLoggedIn,
+  isAdmin,
+  isNotLoggedIn,
+  isLocalRequest,
+  hasApiScope,
+  upload,
+  LOGIC,
+};
